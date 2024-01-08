@@ -1,0 +1,51 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "python example.txt",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "integratedTerminal",
+				"justMyCode": true,
+				"cwd": "${fileDirname}",
+				"args": ["example.txt"]
+			},
+			{
+				"name": "python input.txt",
+				"type": "python",
+				"request": "launch",
+				"program": "${file}",
+				"console": "integratedTerminal",
+				"justMyCode": true,
+				"cwd": "${fileDirname}",
+				"args": ["input.txt"]
+			},
+			{
+				"name": "C Launch",
+				"type": "cppdbg",
+				"request": "launch",
+				"args": [],
+				"program": "${fileDirname}/${fileBasenameNoExtension}",
+				"cwd": "${fileDirname}",
+				"targetArchitecture": "x86",
+				"stopAtEntry": true,
+				"MIMode": "lldb",
+				"linux": {
+					"MIMode": "gdb",
+					"miDebuggerPath": "/usr/bin/gdb"
+				},
+				"osx": {
+					"MIMode": "lldb"
+				},
+			  }
+		]
+	}
+}

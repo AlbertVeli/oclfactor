@@ -1,0 +1,3 @@
+coreutils*
+*.o
+factor
