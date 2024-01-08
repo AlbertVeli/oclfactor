@@ -45,75 +45,75 @@
 #define MINIGMP_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MINIGMP_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define minigmp_umul_ppmm(w1, w0, u, v)					\
-  do {									\
-    mp_limb_t __x0, __x1, __x2, __x3;					\
-    unsigned __ul, __vl, __uh, __vh;					\
-    mp_limb_t __u = (u), __v = (v);					\
-									\
-    __ul = __u & MINIGMP_LLIMB_MASK;					\
-    __uh = __u >> (MINIGMP_LIMB_BITS / 2);				\
-    __vl = __v & MINIGMP_LLIMB_MASK;					\
-    __vh = __v >> (MINIGMP_LIMB_BITS / 2);				\
-									\
-    __x0 = (mp_limb_t) __ul * __vl;					\
-    __x1 = (mp_limb_t) __ul * __vh;					\
-    __x2 = (mp_limb_t) __uh * __vl;					\
-    __x3 = (mp_limb_t) __uh * __vh;					\
-									\
-    __x1 += __x0 >> (MINIGMP_LIMB_BITS / 2);/* this can't give carry */	\
-    __x1 += __x2;		/* but this indeed can */		\
-    if (__x1 < __x2)		/* did we get it? */			\
-      __x3 += MINIGMP_HLIMB_BIT; /* yes, add it in the proper pos. */	\
-									\
-    (w1) = __x3 + (__x1 >> (MINIGMP_LIMB_BITS / 2));			\
+#define minigmp_umul_ppmm(w1, w0, u, v)             \
+  do {                                              \
+    mp_limb_t __x0, __x1, __x2, __x3;               \
+    unsigned __ul, __vl, __uh, __vh;                \
+    mp_limb_t __u = (u), __v = (v);                 \
+                                                    \
+    __ul = __u & MINIGMP_LLIMB_MASK;                \
+    __uh = __u >> (MINIGMP_LIMB_BITS / 2);          \
+    __vl = __v & MINIGMP_LLIMB_MASK;                \
+    __vh = __v >> (MINIGMP_LIMB_BITS / 2);          \
+                                                    \
+    __x0 = (mp_limb_t) __ul * __vl;                 \
+    __x1 = (mp_limb_t) __ul * __vh;                 \
+    __x2 = (mp_limb_t) __uh * __vl;                 \
+    __x3 = (mp_limb_t) __uh * __vh;                 \
+                                                    \
+    __x1 += __x0 >> (MINIGMP_LIMB_BITS / 2);/* this can't give carry */ \
+    __x1 += __x2;		/* but this indeed can */                       \
+    if (__x1 < __x2)		/* did we get it? */                        \
+      __x3 += MINIGMP_HLIMB_BIT; /* yes, add it in the proper pos. */   \
+                                                                        \
+    (w1) = __x3 + (__x1 >> (MINIGMP_LIMB_BITS / 2));                    \
     (w0) = (__x1 << (MINIGMP_LIMB_BITS / 2)) + (__x0 & MINIGMP_LLIMB_MASK); \
   } while (0)
 
-#define minigmp_clz(count, x) do {					\
-    mp_limb_t __clz_x = (x);						\
-    unsigned __clz_c;							\
-    for (__clz_c = 0;							\
+#define minigmp_clz(count, x) do {                 \
+    mp_limb_t __clz_x = (x);                       \
+    unsigned __clz_c;                              \
+    for (__clz_c = 0;                              \
 	 (__clz_x & ((mp_limb_t) 0xff << (MINIGMP_LIMB_BITS - 8))) == 0; \
-	 __clz_c += 8)							\
-      __clz_x <<= 8;							\
-    for (; (__clz_x & MINIGMP_LIMB_HIGHBIT) == 0; __clz_c++)		\
-      __clz_x <<= 1;							\
-    (count) = __clz_c;							\
+	 __clz_c += 8)                                 \
+      __clz_x <<= 8;                               \
+    for (; (__clz_x & MINIGMP_LIMB_HIGHBIT) == 0; __clz_c++) \
+      __clz_x <<= 1;                               \
+    (count) = __clz_c;                             \
   } while (0)
 
-#define minigmp_ctz(count, x) do {					\
-    mp_limb_t __ctz_x = (x);						\
-    unsigned __ctz_c = 0;						\
-    minigmp_clz (__ctz_c, __ctz_x & - __ctz_x);				\
-    (count) = MINIGMP_LIMB_BITS - 1 - __ctz_c;				\
+#define minigmp_ctz(count, x) do {                 \
+    mp_limb_t __ctz_x = (x);                       \
+    unsigned __ctz_c = 0;                          \
+    minigmp_clz (__ctz_c, __ctz_x & - __ctz_x);    \
+    (count) = MINIGMP_LIMB_BITS - 1 - __ctz_c;     \
   } while (0)
 
 #define minigmp_add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  do {									\
-    mp_limb_t __x;							\
-    __x = (al) + (bl);							\
-    (sh) = (ah) + (bh) + (__x < (al));					\
-    (sl) = __x;								\
+  do {                                             \
+    mp_limb_t __x;                                 \
+    __x = (al) + (bl);                             \
+    (sh) = (ah) + (bh) + (__x < (al));             \
+    (sl) = __x;                                    \
   } while (0)
 
-#define minigmp_udiv_qrnnd_preinv(q, r, nh, nl, d, di)			\
-  do {									\
-    mp_limb_t _qh, _ql, _r, _mask;					\
-    minigmp_umul_ppmm (_qh, _ql, (nh), (di));				\
-    minigmp_add_ssaaaa (_qh, _ql, _qh, _ql, (nh) + 1, (nl));		\
-    _r = (nl) - _qh * (d);						\
-    _mask = -(mp_limb_t) (_r > _ql); /* both > and >= are OK */		\
-    _qh += _mask;							\
-    _r += _mask & (d);							\
-    if (_r >= (d))							\
+#define minigmp_udiv_qrnnd_preinv(q, r, nh, nl, d, di)          \
+  do {                                  \
+    mp_limb_t _qh, _ql, _r, _mask;      \
+    minigmp_umul_ppmm (_qh, _ql, (nh), (di));                   \
+    minigmp_add_ssaaaa (_qh, _ql, _qh, _ql, (nh) + 1, (nl));    \
+    _r = (nl) - _qh * (d);              \
+    _mask = -(mp_limb_t) (_r > _ql); /* both > and >= are OK */ \
+    _qh += _mask;                       \
+    _r += _mask & (d);                  \
+    if (_r >= (d))                      \
       {									\
 	_r -= (d);							\
 	_qh++;								\
       }									\
-									\
-    (r) = _r;								\
-    (q) = _qh;								\
+                                        \
+    (r) = _r;                           \
+    (q) = _qh;                          \
   } while (0)
 
 static mp_limb_t
@@ -306,10 +306,38 @@ minigmp_div_qr_1(mp_ptr qp, mp_srcptr np, mp_size_t nn, mp_limb_t d)
 
 typedef unsigned long ulong;
 
+/* Try first factors using gmp mpz */
+void try_first_factors(mpz_t n)
+{
+	ulong first_factors[5] = { 2, 3, 5, 7, 0 };
+	int i = 0;
+	ulong d;
+	mpz_t q, r;
+
+	mpz_init(q);
+	mpz_init(r);
+
+	while (1) {
+		d = first_factors[i++];
+		if (d == 0)
+			break;
+		mpz_fdiv_qr_ui(q, r, n, d);
+	    if (mpz_cmp_ui(r, 0) == 0) {
+			/* Prime factor d found */
+			mpz_set(n, q);
+			/* TODO: Save found factors somewhere */
+			printf("%lu\n", d);
+		}
+	}
+
+	mpz_clear(r);
+	mpz_clear(q);
+}
+
 int main(void)
 {
 	mpz_t n;
-	ulong d, r;
+	ulong d, r, i;
 	mp_limb_t n_limbs[2];
 	mp_limb_t q_limbs[2];
 	mp_size_t n_len = 2;
@@ -317,6 +345,9 @@ int main(void)
 	/* TODO: Read input from argv */
 	mpz_init_set_ui(n, (ulong)(2 * 435505820298201979));
 	mpz_mul_ui(n, n, 251);
+
+	/* First try factors below 10 */
+	try_first_factors(n);
 
 	if (n->_mp_size > 2) {
 		fprintf(stderr,
@@ -329,25 +360,37 @@ int main(void)
 	/* Copy from mpz to mpn interface */
 	MPZ_TO_MPN_2(n_limbs, n);
 
-	/* TODO: Don't try all numbers, do a sieve */
-	for (d = 2; d < MINIGMP_LIMB_MAX; d++) {
+	/* Do a naive sieve, try decimal numbers ending with 1, 3, 7, 9 */
+	for (d = 10; d < MINIGMP_LIMB_MAX; d += 10) {
+		/* primes > 5 ends in 1, 3, 7 or 9 in decimal */
+		int pattern[4] = { 1, 3, 7, 9 };
 
-		/* This should go to the GPU (in ranges, to reduce overhead) */
-		r = minigmp_div_qr_1(q_limbs, n_limbs, n_len, d);
+		/* Try 4 out of 10 numbers.
+		 * TODO: use a better sieve.
+		 */
+		for (i = 0; i < 4; i++) {
 
-		/* Back on CPU */
-		if (r == 0) {
-			printf("%lu\n", d);
-			/* n = q */
-			MPZ_SET_MPN_2(n, q_limbs);
-			MPN_TO_MPN_2(n_limbs, q_limbs);
-			if (IS_PRIME(n)) {
-				mpz_out_str(stdout, 10, n);
-				puts("");
-				break;
+			/* This should go to the GPU (in ranges, to reduce overhead) */
+			r = minigmp_div_qr_1(q_limbs, n_limbs, n_len, d + pattern[i]);
+
+			/* Back on CPU */
+			if (r == 0) {
+				/* TODO: Save factors */
+				printf("%lu\n", d + pattern[i]);
+				/* n = q */
+				MPZ_SET_MPN_2(n, q_limbs);
+				MPN_TO_MPN_2(n_limbs, q_limbs);
+				if (IS_PRIME(n)) {
+					/* Factorisation done, n is prime */
+					mpz_out_str(stdout, 10, n);
+					puts("");
+					goto out;
+				}
 			}
 		}
 	}
+
+out:
 
 	mpz_clear(n);
 
